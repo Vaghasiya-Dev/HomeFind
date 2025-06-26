@@ -145,6 +145,7 @@ const StudentPG = () => {
                     ownerEmail={property.owner_email}
                     ownerAddress={property.owner_address}
                     ownerDescription={property.owner_description}
+                    images={property.images || []}
                   />
                 ))
               ) : (
