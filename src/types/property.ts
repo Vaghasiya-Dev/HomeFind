@@ -1,3 +1,4 @@
+
 export type PropertyType = 'apartment' | 'house' | 'villa' | 'pg' | 'plot';
 export type ListingType = 'sale' | 'rent' | 'pg';
 export type PropertyStatus = 'active' | 'under_review' | 'inactive';
@@ -114,6 +115,7 @@ export interface StudentDetail {
   user_id: string;
   property_id: string;
   college_name?: string;
+  college_name_pkey?: string; // Add this field to match database schema
   course?: string;
   branch?: string;
   year_of_study?: string;

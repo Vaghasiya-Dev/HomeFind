@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Building,
   MapPin,
@@ -71,6 +71,11 @@ export default function PropertyCard({
   const navigate = useNavigate();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
+
+  // Reset activeImage when dialog opens
+  useEffect(() => {
+    if (isDialogOpen) setActiveImage(0);
+  }, [isDialogOpen]);
 
   const canEdit = user && userId && user.id === userId;
 
@@ -212,7 +217,7 @@ export default function PropertyCard({
                     <button
                       key={idx}
                       onClick={() => setActiveImage(idx)}
-                      className={`h-14 w-20 rounded border-2 ${activeImage === idx ? 'border-blue-500' : 'border-transparent'} overflow-hidden focus:outline-none`}
+                      className={`h-14 w-20 rounded border-2 ${activeImage === idx ? 'border-blue-500' : 'border-transparent'} overflow-hidden focus:outline-none flex-shrink-0`}
                       type="button"
                     >
                       <img src={img} alt={`thumb-${idx}`} className="object-cover w-full h-full" />
@@ -318,6 +323,7 @@ export default function PropertyCard({
                           <a
                             href={`tel:${ownerPhone}`}
                             className="font-semibold text-primary hover:underline"
+                            onClick={e => e.stopPropagation()}
                           >
                             {ownerPhone}
                           </a>
@@ -335,6 +341,7 @@ export default function PropertyCard({
                           <a
                             href={`mailto:${ownerEmail}`}
                             className="font-semibold text-primary hover:underline break-all"
+                            onClick={e => e.stopPropagation()}
                           >
                             {ownerEmail}
                           </a>

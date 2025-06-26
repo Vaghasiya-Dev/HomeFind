@@ -57,8 +57,8 @@ export default function Layout() {
               <h3 className="font-medium text-gray-900 mb-4">Contact</h3>
               <ul className="space-y-2 text-sm">
                 <li className="text-gray-600">Email: support@homefinder.com</li>
-                <li className="text-gray-600">Phone: +91 98765 43210</li>
-                <li className="text-gray-600">Address: 123 Main Street, Mumbai</li>
+                <li className="text-gray-600">Phone: +91 97370 32211</li>
+                <li className="text-gray-600">Address: 2nd Floor, Green Atria, Anand Mahal Road, Adajan, Narotam Nagar, Surat, Gujarat</li>
               </ul>
             </div>
           </div>

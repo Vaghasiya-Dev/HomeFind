@@ -29,9 +29,15 @@ export const getBookedStudents = async () => {
   // Map the data to match the expected StudentDetail format
   const studentsWithUsers = students.map((student) => ({
     ...student,
-    user: student.profiles || { full_name: null, phone: null, email: null }
+    user: student.profiles ? {
+      full_name: student.profiles.full_name,
+      phone: student.profiles.phone,
+      email: student.profiles.email
+    } : null,
+    college_name: student.college_name_pkey // Map the correct field name
   })) as StudentDetail[];
 
+  console.log('Fetched students with user data:', studentsWithUsers);
   return studentsWithUsers;
 };
 

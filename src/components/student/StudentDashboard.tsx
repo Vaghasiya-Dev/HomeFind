@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -18,6 +17,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import RoommateReviews from './RoommateReviews';
 import PropertyDetails from './PropertyDetails';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function StudentDashboard() {
   const { user } = useAuth();
@@ -28,7 +28,7 @@ export default function StudentDashboard() {
   const [moveOutDate, setMoveOutDate] = useState<Date | undefined>(undefined);
   
   const [formData, setFormData] = useState<Partial<StudentDetail>>({
-    college_name: '',
+    college_name_pkey: '',
     course: '',
     year_of_study: '',
     emergency_contact: '',
@@ -63,18 +63,43 @@ export default function StudentDashboard() {
   
   // Update student details mutation
   const updateDetailsMutation = useMutation({
-    mutationFn: (details: Partial<StudentDetail>) => {
-      if (!user || !studentDetails?.property_id) {
-        throw new Error("User or property not found");
+    mutationFn: async (details: Partial<StudentDetail>) => {
+      if (!user) {
+        throw new Error("User not found");
       }
-      return updateStudentDetails(user.id, studentDetails.property_id, details);
+      
+      console.log('Updating student details:', details);
+      
+      const { data, error } = await supabase
+        .from('student_details')
+        .update({
+          college_name_pkey: details.college_name_pkey,
+          course: details.course,
+          year_of_study: details.year_of_study,
+          emergency_contact: details.emergency_contact,
+          preferences: details.preferences,
+          move_in_date: details.move_in_date,
+          move_out_date: details.move_out_date,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error updating student details:', error);
+        throw error;
+      }
+      
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['studentDetails', user?.id] });
-      toast.success('Your details have been updated');
+      toast.success('Your details have been updated successfully');
       setIsEditing(false);
     },
     onError: (error: any) => {
+      console.error('Update error:', error);
       toast.error(error.message || 'Failed to update your details');
     }
   });
@@ -83,7 +108,7 @@ export default function StudentDashboard() {
   useEffect(() => {
     if (studentDetails) {
       setFormData({
-        college_name: studentDetails.college_name || '',
+        college_name_pkey: studentDetails.college_name_pkey || '',
         course: studentDetails.course || '',
         year_of_study: studentDetails.year_of_study || '',
         emergency_contact: studentDetails.emergency_contact || '',
@@ -124,7 +149,10 @@ export default function StudentDashboard() {
   };
   
   const handleSubmit = () => {
-    if (!user || !studentDetails?.property_id) return;
+    if (!user) {
+      toast.error('User not found');
+      return;
+    }
     
     const updatedDetails = {
       ...formData,
@@ -132,6 +160,7 @@ export default function StudentDashboard() {
       move_out_date: moveOutDate ? moveOutDate.toISOString() : undefined
     };
     
+    console.log('Submitting form data:', updatedDetails);
     updateDetailsMutation.mutate(updatedDetails);
   };
   
@@ -208,11 +237,11 @@ export default function StudentDashboard() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="college_name">College/University</Label>
+                      <Label htmlFor="college_name_pkey">College/University</Label>
                       <Input 
-                        id="college_name"
-                        name="college_name" 
-                        value={formData.college_name} 
+                        id="college_name_pkey"
+                        name="college_name_pkey" 
+                        value={formData.college_name_pkey || ''} 
                         onChange={handleFormChange} 
                       />
                     </div>
@@ -222,7 +251,7 @@ export default function StudentDashboard() {
                       <Input 
                         id="course"
                         name="course" 
-                        value={formData.course} 
+                        value={formData.course || ''} 
                         onChange={handleFormChange} 
                       />
                     </div>
@@ -232,7 +261,7 @@ export default function StudentDashboard() {
                       <Input 
                         id="year_of_study"
                         name="year_of_study" 
-                        value={formData.year_of_study} 
+                        value={formData.year_of_study || ''} 
                         onChange={handleFormChange} 
                       />
                     </div>
@@ -242,7 +271,7 @@ export default function StudentDashboard() {
                       <Input 
                         id="emergency_contact"
                         name="emergency_contact" 
-                        value={formData.emergency_contact} 
+                        value={formData.emergency_contact || ''} 
                         onChange={handleFormChange} 
                       />
                     </div>
@@ -311,6 +340,8 @@ export default function StudentDashboard() {
                             onChange={(e) => handlePreferenceChange('cleanliness', parseInt(e.target.value))}
                             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                             title="Select your cleanliness preference from 1 (Relaxed) to 5 (Very clean)"
+                            placeholder="Cleanliness preference"
+                            aria-label="Cleanliness preference"
                           />
                           <span className="ml-2 font-medium">
                             {formData.preferences?.cleanliness || 3}
@@ -391,7 +422,7 @@ export default function StudentDashboard() {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">College/University:</span>
-                          <span className="font-medium">{studentDetails.college_name || '-'}</span>
+                          <span className="font-medium">{studentDetails.college_name_pkey || '-'}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Course/Degree:</span>

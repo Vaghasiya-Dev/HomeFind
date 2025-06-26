@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Clock, User as UserIcon, Star, Phone } from 'lucide-react';
-import { StudentDetail, isRelationError } from '@/types/property';
+import { Clock, Star, Phone } from 'lucide-react';
+import { StudentDetail } from '@/types/property';
 
 interface RoommateCardProps {
   student: StudentDetail;
@@ -12,17 +11,24 @@ interface RoommateCardProps {
 }
 
 export default function RoommateCard({ student, compatibilityScore }: RoommateCardProps) {
-  const userName = student.user && !isRelationError(student.user) && student.user.full_name
-    ? student.user.full_name
-    : 'Not provided';
+  // If you use a Supabase join, use student.profiles instead of student.user
+  function isUserProfile(user: any): user is { full_name?: string; email?: string; phone?: string } {
+    return user && typeof user === 'object' && 'full_name' in user;
+  }
 
-  const userEmail = student.user && !isRelationError(student.user) && student.user.email
-    ? student.user.email
-    : '';
+  const userName =
+    (isUserProfile(student.user) ? student.user.full_name : undefined) ||
+    'Not provided';
 
-  const userPhone = student.user && !isRelationError(student.user) && student.user.phone
-    ? student.user.phone
-    : 'Not provided';
+  const userEmail =
+    (isUserProfile(student.user) ? student.user.email : undefined) ||
+    'Not provided';
+
+  const userPhone =
+    (isUserProfile(student.user) ? student.user.phone : undefined) ||
+    'Not provided';
+
+  const collegeName = student.college_name || student.college_name_pkey || 'Not provided';
 
   const formatDailyRoutine = () => {
     if (!student.daily_routine || typeof student.daily_routine !== 'object') {
@@ -52,7 +58,7 @@ export default function RoommateCard({ student, compatibilityScore }: RoommateCa
         <div className="flex items-start gap-4">
           <Avatar className="h-12 w-12">
             <AvatarFallback>
-              {userName !== 'Not provided' ? userName.charAt(0) : 'U'}
+              {userName !== 'Not provided' ? userName.charAt(0).toUpperCase() : 'U'}
             </AvatarFallback>
           </Avatar>
           
@@ -60,9 +66,7 @@ export default function RoommateCard({ student, compatibilityScore }: RoommateCa
             <div className="flex items-center justify-between mb-2">
               <div>
                 <h3 className="font-semibold text-lg truncate">{userName}</h3>
-                {userEmail && (
-                  <p className="text-sm text-muted-foreground truncate">{userEmail}</p>
-                )}
+                <p className="text-sm text-muted-foreground truncate">{userEmail}</p>
               </div>
               <Badge className={`${getCompatibilityColor(compatibilityScore)} border-0`}>
                 <Star className="h-3 w-3 mr-1" />
@@ -80,9 +84,7 @@ export default function RoommateCard({ student, compatibilityScore }: RoommateCa
                 </div>
               </div>
 
-              {student.college_name && (
-                <p className="text-sm"><span className="font-medium">College:</span> {student.college_name}</p>
-              )}
+              <p className="text-sm"><span className="font-medium">College:</span> {collegeName}</p>
               
               {student.course && (
                 <p className="text-sm"><span className="font-medium">Course:</span> {student.course}</p>
