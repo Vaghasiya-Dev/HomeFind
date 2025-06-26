@@ -140,14 +140,15 @@ export default function Profile() {
     try {
       const { error } = await supabase
         .from('profiles')
-        .upsert({
+        .update({
           id: user?.id,
           full_name: values.fullName,
           email: values.email,
           phone: values.phone,
           location: values.location,
           bio: values.bio || "",
-        });
+        })
+        .eq('id', user?.id);
 
       if (error) throw error;
 
