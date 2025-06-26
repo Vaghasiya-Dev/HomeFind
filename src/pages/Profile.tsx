@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
 } from '@/components/ui/dialog';
 import { ProfileFormValues } from '@/types/profile';
 import ProfileHeader from '@/components/profile/ProfileHeader';
@@ -16,12 +16,12 @@ import ContactInfo from '@/components/profile/ContactInfo';
 import EditProfileForm from '@/components/profile/EditProfileForm';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  getUserProperties, 
-  getFavorites, 
-  getSavedSearches, 
-  updateProperty, 
-  deleteProperty 
+import {
+  getUserProperties,
+  getFavorites,
+  getSavedSearches,
+  updateProperty,
+  deleteProperty
 } from '@/services/propertyService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Property, FavoriteProperty, SavedSearch } from '@/types/property';
@@ -42,35 +42,35 @@ export default function Profile() {
     location: "",
     bio: "",
   });
-  
+
   // Dialog states
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [propertyToDelete, setPropertyToDelete] = useState<string | null>(null);
-  
+
   // Query user properties
   const { data: properties, isLoading: propertiesLoading } = useQuery({
     queryKey: ['userProperties', user?.id],
     queryFn: () => user ? getUserProperties(user.id) : Promise.resolve([]),
     enabled: !!user,
   });
-  
+
   // Query favorites
   const { data: favorites, isLoading: favoritesLoading } = useQuery({
     queryKey: ['userFavorites', user?.id],
     queryFn: () => user ? getFavorites(user.id) : Promise.resolve([]),
     enabled: !!user,
   });
-  
+
   // Query saved searches
   const { data: savedSearches, isLoading: searchesLoading } = useQuery({
     queryKey: ['userSavedSearches', user?.id],
     queryFn: () => user ? getSavedSearches(user.id) : Promise.resolve([]),
     enabled: !!user,
   });
-  
+
   // Mutation for updating a property
   const updatePropertyMutation = useMutation({
-    mutationFn: ({ id, property }: { id: string, property: Partial<Property> }) => 
+    mutationFn: ({ id, property }: { id: string, property: Partial<Property> }) =>
       updateProperty(id, property),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userProperties', user?.id] });
@@ -80,7 +80,7 @@ export default function Profile() {
       toast.error(error.message || 'Failed to update property');
     }
   });
-  
+
   // Mutation for deleting a property
   const deletePropertyMutation = useMutation({
     mutationFn: (id: string) => deleteProperty(id),
@@ -108,9 +108,9 @@ export default function Profile() {
         .select('*')
         .eq('id', user?.id)
         .maybeSingle();
-        
+
       if (profileError) throw profileError;
-      
+
       if (profileData) {
         setUserData({
           fullName: profileData.full_name || "",
@@ -148,9 +148,9 @@ export default function Profile() {
           location: values.location,
           bio: values.bio || "",
         });
-        
+
       if (error) throw error;
-      
+
       setUserData({
         fullName: values.fullName,
         email: values.email,
@@ -158,7 +158,7 @@ export default function Profile() {
         location: values.location,
         bio: values.bio || "",
       });
-      
+
       toast.success('Profile updated successfully!');
       setIsEditing(false);
     } catch (error) {
@@ -170,16 +170,16 @@ export default function Profile() {
   const handleCancelEdit = () => {
     setIsEditing(false);
   };
-  
+
   const handlePropertyStatusChange = (id: string, status: 'active' | 'under_review' | 'inactive') => {
     updatePropertyMutation.mutate({ id, property: { status } });
   };
-  
+
   const handleDeleteProperty = (id: string) => {
     setPropertyToDelete(id);
     setDeleteDialogOpen(true);
   };
-  
+
   const confirmDeleteProperty = () => {
     if (propertyToDelete) {
       deletePropertyMutation.mutate(propertyToDelete);
@@ -202,24 +202,24 @@ export default function Profile() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Profile Sidebar */}
         <div className="space-y-6">
-          <ProfileHeader 
+          <ProfileHeader
             userData={userData}
             isEditing={isEditing}
             setIsEditing={setIsEditing}
             setUserData={handleProfileUpdate}
           />
-          
+
           {!isEditing && <ContactInfo userData={userData} />}
-          
+
           {isEditing && (
-            <EditProfileForm 
-              userData={userData} 
+            <EditProfileForm
+              userData={userData}
               onSubmit={handleProfileUpdate}
               onCancel={handleCancelEdit}
             />
           )}
         </div>
-        
+
         {/* Main Content */}
         <div className="lg:col-span-3">
           <Tabs defaultValue="properties">
@@ -228,7 +228,7 @@ export default function Profile() {
               <TabsTrigger value="favorites">Favorites</TabsTrigger>
               <TabsTrigger value="searches">Saved Searches</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="properties" className="outline-none">
               <div className="mb-6 flex justify-between items-center">
                 <h2 className="text-xl font-bold">My Listed Properties</h2>
@@ -238,7 +238,7 @@ export default function Profile() {
                   </Button>
                 </Link>
               </div>
-              
+
               {propertiesLoading ? (
                 <div className="flex justify-center items-center py-12">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -247,72 +247,70 @@ export default function Profile() {
                 <div className="space-y-4">
                   {properties.map(property => (
                     <Card key={property.id} className="flex flex-col border rounded-lg overflow-hidden">
-                      <CardContent className="p-0">
-                        <div className="grid grid-cols-1 sm:grid-cols-3 h-auto sm:h-40">
-                          <div className="sm:w-64 w-full h-40 sm:h-auto flex-shrink-0">
-                            <img 
-                              src={property.images?.[0] || "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80"} 
-                              alt={property.title}
-                              className="h-40 sm:h-full w-full object-cover rounded-t-md sm:rounded-l-md sm:rounded-t-none"
-                            />
-                          </div>
-                          <div className="col-span-2 p-4 flex flex-col justify-between min-w-0">
-                            <div>
-                              <div className="flex justify-between items-start sm:items-center gap-2">
-                                <h3 className="font-medium">{property.title}</h3>
-                                <span className={`text-sm font-medium px-2 py-1 rounded-full ${
-                                  property.status === 'active' ? 'bg-green-100 text-green-800' : 
-                                  property.status === 'under_review' ? 'bg-amber-100 text-amber-800' : 
-                                  'bg-gray-100 text-gray-800'
+                      <div className="grid grid-cols-1 sm:grid-cols-3 h-auto sm:h-40">
+                        <div className="w-48 h-40 flex-shrink-0">
+                          <img
+                            src={property.images?.[0] || "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80"}
+                            alt={property.title}
+                            className="h-40 sm:h-full w-full object-cover rounded-t-md sm:rounded-l-md sm:rounded-t-none"
+                          />
+                        </div>
+                        <div className="col-span-2 p-4 flex flex-col justify-between min-w-0">
+                          <div>
+                            <div className="flex justify-between items-start sm:items-center gap-2">
+                              <h3 className="font-medium">{property.title}</h3>
+                              <span className={`text-sm font-medium px-2 py-1 rounded-full ${property.status === 'active' ? 'bg-green-100 text-green-800' :
+                                  property.status === 'under_review' ? 'bg-amber-100 text-amber-800' :
+                                    'bg-gray-100 text-gray-800'
                                 }`}>
-                                  {property.status === 'active' ? 'Active' : 
-                                   property.status === 'under_review' ? 'Under Review' : 
-                                   'Inactive'}
-                                </span>
-                              </div>
-                              <p className="text-muted-foreground text-xs sm:text-sm truncate">{property.location}</p>
-                              <p className="font-semibold mt-2 text-sm sm:text-base">
-                                {property.listing_type === 'rent' ? 
-                                  `₹${property.price.toLocaleString()}/month` : 
-                                  property.price >= 10000000 ? 
-                                    `₹${(property.price / 10000000).toFixed(2)} Cr` : 
-                                    `₹${(property.price / 100000).toFixed(2)} Lac`
-                                }
-                              </p>
+                                {property.status === 'active' ? 'Active' :
+                                  property.status === 'under_review' ? 'Under Review' :
+                                    'Inactive'}
+                              </span>
                             </div>
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mt-2">
-                              <div className="text-xs sm:text-sm text-muted-foreground  ">
-                                Listed on: {new Date(property.created_at || '').toLocaleDateString()}
-                              </div>
-                              <div className="flex gap-2">
-                                <Link to={`/edit-property/${property.id}`}>
-                                  <Button size="sm" variant="secondary">
-                                    <Edit className="h-4 w-4 mr-1" />
-                                    Edit
-                                  </Button>
-                                </Link>
-                                <Button 
-                                  size="sm" 
-                                  variant="outline"
-                                  onClick={() => {
-                                    const newStatus = property.status === 'active' ? 'inactive' : 'active';
-                                    handlePropertyStatusChange(property.id, newStatus);
-                                  }}
-                                >
-                                  {property.status === 'active' ? 'Deactivate' : 'Activate'}
+                            <p className="text-muted-foreground text-xs sm:text-sm truncate">{property.location}</p>
+                            <p className="font-semibold mt-2 text-sm sm:text-base">
+                              {property.listing_type === 'rent' ?
+                                `₹${property.price.toLocaleString()}/month` :
+                                property.price >= 10000000 ?
+                                  `₹${(property.price / 10000000).toFixed(2)} Cr` :
+                                  `₹${(property.price / 100000).toFixed(2)} Lac`
+                              }
+                            </p>
+                          </div>
+                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mt-2">
+                            <div className="text-xs sm:text-sm text-muted-foreground  ">
+                              Listed on: {new Date(property.created_at || '').toLocaleDateString()}
+                            </div>
+                            <div className="flex gap-2">
+                              <Link to={`/edit-property/${property.id}`}>
+                                <Button size="sm" variant="secondary">
+                                  <Edit className="h-4 w-4 mr-1" />
+                                  Edit
                                 </Button>
-                                <Button 
-                                  size="sm" 
-                                  variant="destructive"
-                                  onClick={() => handleDeleteProperty(property.id)}
-                                >
-                                  Remove
-                                </Button>
-                              </div>
+                              </Link>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  const newStatus = property.status === 'active' ? 'inactive' : 'active';
+                                  handlePropertyStatusChange(property.id, newStatus);
+                                }}
+                              >
+                                {property.status === 'active' ? 'Deactivate' : 'Activate'}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDeleteProperty(property.id)}
+                              >
+                                Remove
+                              </Button>
                             </div>
                           </div>
                         </div>
-                      </CardContent>
+                      </div>
+
                     </Card>
                   ))}
                 </div>
@@ -325,10 +323,10 @@ export default function Profile() {
                 </div>
               )}
             </TabsContent>
-            
+
             <TabsContent value="favorites" className="outline-none">
               <h2 className="text-xl font-bold mb-6">Favorite Properties</h2>
-              
+
               {favoritesLoading ? (
                 <div className="flex justify-center items-center py-12">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -338,8 +336,8 @@ export default function Profile() {
                   {favorites.map(favorite => (
                     <Card key={favorite.id} className="overflow-hidden">
                       <div className="relative">
-                        <img 
-                          src={favorite.property?.images?.[0] || "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80"} 
+                        <img
+                          src={favorite.property?.images?.[0] || "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80"}
                           alt={favorite.property?.title || "Property"}
                           className="h-48 w-full object-cover"
                         />
@@ -351,12 +349,12 @@ export default function Profile() {
                         <h3 className="font-semibold">{favorite.property?.title}</h3>
                         <p className="text-muted-foreground text-sm">{favorite.property?.location}</p>
                         <p className="font-bold mt-2">
-                          {favorite.property?.listing_type === 'rent' ? 
-                            `₹${favorite.property.price.toLocaleString()}/month` : 
-                            favorite.property?.price && favorite.property.price >= 10000000 ? 
-                              `₹${(favorite.property.price / 10000000).toFixed(2)} Cr` : 
-                              favorite.property?.price ? 
-                                `₹${(favorite.property.price / 100000).toFixed(2)} Lac` : 
+                          {favorite.property?.listing_type === 'rent' ?
+                            `₹${favorite.property.price.toLocaleString()}/month` :
+                            favorite.property?.price && favorite.property.price >= 10000000 ?
+                              `₹${(favorite.property.price / 10000000).toFixed(2)} Cr` :
+                              favorite.property?.price ?
+                                `₹${(favorite.property.price / 100000).toFixed(2)} Lac` :
                                 'Price not available'
                           }
                         </p>
@@ -380,8 +378,8 @@ export default function Profile() {
                             </span>
                           )}
                         </div>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           className="w-full mt-4"
                           onClick={() => {
                             if (favorite.property?.listing_type === 'sale') {
@@ -406,10 +404,10 @@ export default function Profile() {
                 </div>
               )}
             </TabsContent>
-            
+
             <TabsContent value="searches" className="outline-none">
               <h2 className="text-xl font-bold mb-6">Saved Searches</h2>
-              
+
               {searchesLoading ? (
                 <div className="flex justify-center items-center py-12">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -428,8 +426,8 @@ export default function Profile() {
                         <div className="flex flex-wrap gap-2 mt-2">
                           {search.criteria.propertyType && (
                             <span className="text-xs bg-muted px-2 py-1 rounded-full">
-                              {Array.isArray(search.criteria.propertyType) 
-                                ? search.criteria.propertyType.join(', ') 
+                              {Array.isArray(search.criteria.propertyType)
+                                ? search.criteria.propertyType.join(', ')
                                 : search.criteria.propertyType}
                             </span>
                           )}
@@ -447,8 +445,8 @@ export default function Profile() {
                           )}
                           {search.criteria.bedrooms && (
                             <span className="text-xs bg-muted px-2 py-1 rounded-full">
-                              {Array.isArray(search.criteria.bedrooms) 
-                                ? `${search.criteria.bedrooms.join(', ')} BHK` 
+                              {Array.isArray(search.criteria.bedrooms)
+                                ? `${search.criteria.bedrooms.join(', ')} BHK`
                                 : `${search.criteria.bedrooms} BHK`}
                             </span>
                           )}
@@ -457,12 +455,12 @@ export default function Profile() {
                           <div className="text-sm text-muted-foreground">
                             Last updated: {new Date(search.created_at || '').toLocaleDateString()}
                           </div>
-                          <Button 
+                          <Button
                             size="sm"
                             onClick={() => {
                               const { propertyType } = search.criteria;
-                              if (propertyType === 'pg' || 
-                                  (Array.isArray(propertyType) && propertyType.includes('pg'))) {
+                              if (propertyType === 'pg' ||
+                                (Array.isArray(propertyType) && propertyType.includes('pg'))) {
                                 navigate('/student-pg');
                               } else if (search.criteria.listingType === 'rent') {
                                 navigate('/rent');
@@ -490,7 +488,7 @@ export default function Profile() {
           </Tabs>
         </div>
       </div>
-      
+
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
@@ -502,8 +500,8 @@ export default function Profile() {
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={confirmDeleteProperty}
               disabled={deletePropertyMutation.isPending}
             >
