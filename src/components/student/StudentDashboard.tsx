@@ -171,7 +171,7 @@ export default function StudentDashboard() {
       </h1>
       
       <Tabs defaultValue="details" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="details" className="flex items-center">
             <User className="mr-2 h-4 w-4" />
             My Details
@@ -179,10 +179,6 @@ export default function StudentDashboard() {
           <TabsTrigger value="property" className="flex items-center">
             <Home className="mr-2 h-4 w-4" />
             PG Details
-          </TabsTrigger>
-          <TabsTrigger value="roommates" className="flex items-center">
-            <Users className="mr-2 h-4 w-4" />
-            Roommates
           </TabsTrigger>
           <TabsTrigger value="reviews" className="flex items-center">
             <MessageSquare className="mr-2 h-4 w-4" />
@@ -532,59 +528,6 @@ export default function StudentDashboard() {
         </TabsContent>
         
         {/* Roommates Tab */}
-        <TabsContent value="roommates" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>My Roommates</CardTitle>
-              <CardDescription>
-                View and connect with your roommates in the PG
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loadingResidents ? (
-                <div className="flex justify-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                </div>
-              ) : residents && residents.filter((r: any) => r.user_id !== user.id).length > 0 ? (
-                <div className="space-y-4">
-                  {residents
-                    .filter((r: any) => r.user_id !== user.id)
-                    .map((resident: any) => (
-                      <Card key={resident.id}>
-                        <CardContent className="p-4">
-                          <div className="flex items-center space-x-4">
-                            <div className="bg-primary text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold">
-                              {resident.user?.full_name?.[0] || 'U'}
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="font-medium">{resident.user?.full_name || 'Unknown User'}</h3>
-                              <p className="text-sm text-muted-foreground">
-                                {resident.college_name || 'College not specified'}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                {resident.course} {resident.year_of_study ? `(${resident.year_of_study} year)` : ''}
-                              </p>
-                            </div>
-                            <Button variant="outline" size="sm">
-                              View Profile
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium">No roommates found</h3>
-                  <p className="text-muted-foreground mt-2">
-                    You don't have any roommates registered at this PG yet.
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
         
         {/* Reviews Tab */}
         <TabsContent value="reviews" className="mt-6">

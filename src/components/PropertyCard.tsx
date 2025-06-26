@@ -5,12 +5,10 @@ import {
   Home,
   Square,
   Bath,
-  DoorOpen,
   User,
   Phone,
   Mail,
   Edit,
-  Calendar,
   Hash,
   Eye
 } from 'lucide-react';
@@ -20,7 +18,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -73,6 +70,7 @@ export default function PropertyCard({
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [activeImage, setActiveImage] = useState(0);
 
   const canEdit = user && userId && user.id === userId;
 
@@ -96,7 +94,8 @@ export default function PropertyCard({
     }
   };
 
-  const displayImage = images && images.length > 0 ? images[0] : image;
+  const fallbackImage = "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80";
+  const displayImage = images && images.length > 0 ? images[0] : image || fallbackImage;
 
   return (
     <>
@@ -120,6 +119,7 @@ export default function PropertyCard({
             src={displayImage}
             alt={title}
             className="w-full h-full object-cover"
+            onError={e => { (e.currentTarget as HTMLImageElement).src = fallbackImage; }}
           />
           <div
             className={cn(
@@ -196,13 +196,30 @@ export default function PropertyCard({
           
           <div className="space-y-6">
             {/* Property Image Gallery */}
-            <div className="relative h-80 overflow-hidden rounded-lg shadow-lg">
-              <img
-                src={displayImage}
-                alt={title}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+            <div>
+              <div className="relative h-80 overflow-hidden rounded-lg shadow-lg mb-2">
+                <img
+                  src={images && images.length > 0 ? images[activeImage] : displayImage}
+                  alt={title}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  onError={e => { (e.currentTarget as HTMLImageElement).src = fallbackImage; }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+              </div>
+              {images && images.length > 1 && (
+                <div className="flex gap-2 justify-center mt-2 overflow-x-auto scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-transparent pb-2">
+                  {images.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setActiveImage(idx)}
+                      className={`h-14 w-20 rounded border-2 ${activeImage === idx ? 'border-blue-500' : 'border-transparent'} overflow-hidden focus:outline-none`}
+                      type="button"
+                    >
+                      <img src={img} alt={`thumb-${idx}`} className="object-cover w-full h-full" />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             
             {/* Property Specifications */}

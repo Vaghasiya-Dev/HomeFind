@@ -306,9 +306,6 @@ export default function Rent() {
                     <p className="font-medium">Call us</p>
                     <p className="text-homefinder-primary">+91 98765 43210</p>
                   </div>
-                  <button className="bg-homefinder-primary text-white px-4 py-2 rounded-md hover:bg-homefinder-accent transition-colors">
-                    Request Callback
-                  </button>
                 </div>
               </div>
             </div>

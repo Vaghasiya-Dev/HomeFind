@@ -1,48 +1,37 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { StudentDetail } from '@/types/property';
 import { FilterOptions } from '@/components/student/RoommateFilters';
 
 export const getBookedStudents = async () => {
-  const { data, error } = await supabase
+  // Fetch student details who have booked PG with their profile information
+  const { data: students, error: studentsError } = await supabase
     .from('student_details')
-    .select('*')
+    .select(`
+      *,
+      profiles!student_details_user_id_fkey (
+        full_name,
+        phone,
+        email
+      )
+    `)
     .eq('has_booked_pg', true);
-  
-  if (error) throw error;
-  
-  console.log('Raw student data:', data);
-  
-  // Fetch user profiles separately for each student
-  const studentsWithUsers = await Promise.all(
-    data.map(async (student) => {
-      console.log('Fetching profile for user_id:', student.user_id);
-      
-      // Use .maybeSingle() instead of .single() to handle missing profiles gracefully
-      const { data: userProfile, error: profileError } = await supabase
-        .from('profiles')
-        .select('full_name, phone, email')
-        .eq('id', student.user_id)
-        .maybeSingle(); 
-      
-      if (profileError) {
-        console.error('Error fetching profile for user_id:', student.user_id, profileError);
-        return {
-          ...student,
-          user: { full_name: null, phone: null, email: null }
-        } as StudentDetail;
-      }
-      
-      console.log('Profile data for user_id:', student.user_id, userProfile);
-      
-      return {
-        ...student,
-        user: userProfile || { full_name: null, phone: null, email: null }
-      } as StudentDetail;
-    })
-  );
-  
-  console.log('Students with user profiles:', studentsWithUsers);
+
+  if (studentsError) {
+    console.error('Error fetching students:', studentsError);
+    throw studentsError;
+  }
+
+  if (!students || students.length === 0) {
+    console.log('No students found with booked PGs');
+    return [];
+  }
+
+  // Map the data to match the expected StudentDetail format
+  const studentsWithUsers = students.map((student) => ({
+    ...student,
+    user: student.profiles || { full_name: null, phone: null, email: null }
+  })) as StudentDetail[];
+
   return studentsWithUsers;
 };
 

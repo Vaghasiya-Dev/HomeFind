@@ -246,19 +246,19 @@ export default function Profile() {
               ) : properties && properties.length > 0 ? (
                 <div className="space-y-4">
                   {properties.map(property => (
-                    <Card key={property.id}>
+                    <Card key={property.id} className="flex flex-col border rounded-lg overflow-hidden">
                       <CardContent className="p-0">
-                        <div className="grid grid-cols-3 h-40">
-                          <div className="col-span-1">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 h-auto sm:h-40">
+                          <div className="sm:w-64 w-full h-40 sm:h-auto flex-shrink-0">
                             <img 
                               src={property.images?.[0] || "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80"} 
                               alt={property.title}
-                              className="h-full w-full object-cover"
+                              className="h-40 sm:h-full w-full object-cover rounded-t-md sm:rounded-l-md sm:rounded-t-none"
                             />
                           </div>
-                          <div className="col-span-2 p-4 flex flex-col justify-between">
+                          <div className="col-span-2 p-4 flex flex-col justify-between min-w-0">
                             <div>
-                              <div className="flex justify-between items-start">
+                              <div className="flex justify-between items-start sm:items-center gap-2">
                                 <h3 className="font-medium">{property.title}</h3>
                                 <span className={`text-sm font-medium px-2 py-1 rounded-full ${
                                   property.status === 'active' ? 'bg-green-100 text-green-800' : 
@@ -270,8 +270,8 @@ export default function Profile() {
                                    'Inactive'}
                                 </span>
                               </div>
-                              <p className="text-muted-foreground text-sm">{property.location}</p>
-                              <p className="font-semibold mt-2">
+                              <p className="text-muted-foreground text-xs sm:text-sm truncate">{property.location}</p>
+                              <p className="font-semibold mt-2 text-sm sm:text-base">
                                 {property.listing_type === 'rent' ? 
                                   `₹${property.price.toLocaleString()}/month` : 
                                   property.price >= 10000000 ? 
@@ -280,8 +280,8 @@ export default function Profile() {
                                 }
                               </p>
                             </div>
-                            <div className="flex justify-between items-center">
-                              <div className="text-sm text-muted-foreground">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mt-2">
+                              <div className="text-xs sm:text-sm text-muted-foreground  ">
                                 Listed on: {new Date(property.created_at || '').toLocaleDateString()}
                               </div>
                               <div className="flex gap-2">

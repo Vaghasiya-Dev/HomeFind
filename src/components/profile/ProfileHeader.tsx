@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -39,39 +38,40 @@ export default function ProfileHeader({ userData, isEditing, setIsEditing }: Pro
   };
 
   return (
-    <Card className="p-6 text-center">
-      <Avatar className="h-24 w-24 mx-auto mb-4">
-        <AvatarImage src="https://randomuser.me/api/portraits/men/24.jpg" alt="User profile" />
-        <AvatarFallback>{getInitials()}</AvatarFallback>
-      </Avatar>
-      
-      {!isEditing && (
-        <>
-          <h2 className="text-xl font-semibold">{userData.fullName}</h2>
-          <p className="text-muted-foreground">
-            Member since {new Date(user?.created_at || '').toLocaleDateString()}
-          </p>
-          
-          <div className="mt-6 space-y-2">
-            <Button 
-              variant="outline" 
-              className="w-full flex items-center justify-center gap-2"
-              onClick={() => setIsEditing(true)}
-            >
-              <Edit className="h-4 w-4" />
-              Edit Profile
-            </Button>
-            <Button 
-              variant="outline" 
-              className="w-full flex items-center justify-center gap-2 text-destructive border-destructive hover:bg-destructive/10"
-              onClick={handleLogout}
-            >
-              <LogOut className="h-4 w-4" />
-              Log Out
-            </Button>
-          </div>
-        </>
-      )}
+    <Card className="p-0 overflow-hidden shadow-md border-0">
+      <div className="bg-gradient-to-r h-24 w-full flex items-center justify-center">
+        <Avatar className="h-24 w-24 border-4 border-blue-600 shadow-lg bg-blue-800 -mb-12 z-10">
+          <AvatarFallback className="text-3xl text-white-600">{getInitials()}</AvatarFallback>
+        </Avatar>
+      </div>
+      <div className="pt-14 pb-6 px-6 text-center bg-white rounded-b-lg">
+        {!isEditing && (
+          <>
+            <h2 className="text-2xl font-bold mb-1">{userData.fullName}</h2>
+            <p className="text-muted-foreground text-sm mb-2">
+              Member since {user?.created_at ? new Date(user.created_at).toLocaleDateString() : '—'}
+            </p>
+            <div className="flex flex-col gap-2 mt-4">
+              <Button 
+                variant="outline" 
+                className="w-full flex items-center justify-center gap-2 font-medium border-blue-500 hover:bg-blue-50"
+                onClick={() => setIsEditing(true)}
+              >
+                <Edit className="h-4 w-4" />
+                Edit Profile
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full flex items-center justify-center gap-2 text-destructive border-destructive hover:bg-destructive/10 font-medium"
+                onClick={handleLogout}
+              >
+                <LogOut className="h-4 w-4" />
+                Log Out
+              </Button>
+            </div>
+          </>
+        )}
+      </div>
     </Card>
   );
 }
