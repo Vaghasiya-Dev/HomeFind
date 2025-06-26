@@ -328,55 +328,55 @@ export type Database = {
       student_details: {
         Row: {
           branch: string | null
-          college_name: string | null
+          college_name_pkey: string | null
           course: string | null
-          created_at: string | null
-          daily_routine: Json | null
+          created_at: string
+          daily_routine: Json
           degree: string | null
           emergency_contact: string | null
-          has_booked_pg: boolean | null
+          has_booked_pg: boolean
           id: string
-          move_in_date: string | null
-          move_out_date: string | null
-          preferences: Json | null
+          move_in_date: string
+          move_out_date: string
+          preferences: Json
           property_id: string
-          updated_at: string | null
+          updated_at: string
           user_id: string
           year_of_study: string | null
         }
         Insert: {
           branch?: string | null
-          college_name?: string | null
+          college_name_pkey?: string | null
           course?: string | null
-          created_at?: string | null
-          daily_routine?: Json | null
+          created_at?: string
+          daily_routine?: Json
           degree?: string | null
           emergency_contact?: string | null
-          has_booked_pg?: boolean | null
+          has_booked_pg?: boolean
           id?: string
-          move_in_date?: string | null
-          move_out_date?: string | null
-          preferences?: Json | null
-          property_id: string
-          updated_at?: string | null
-          user_id: string
+          move_in_date?: string
+          move_out_date?: string
+          preferences?: Json
+          property_id?: string
+          updated_at?: string
+          user_id?: string
           year_of_study?: string | null
         }
         Update: {
           branch?: string | null
-          college_name?: string | null
+          college_name_pkey?: string | null
           course?: string | null
-          created_at?: string | null
-          daily_routine?: Json | null
+          created_at?: string
+          daily_routine?: Json
           degree?: string | null
           emergency_contact?: string | null
-          has_booked_pg?: boolean | null
+          has_booked_pg?: boolean
           id?: string
-          move_in_date?: string | null
-          move_out_date?: string | null
-          preferences?: Json | null
+          move_in_date?: string
+          move_out_date?: string
+          preferences?: Json
           property_id?: string
-          updated_at?: string | null
+          updated_at?: string
           user_id?: string
           year_of_study?: string | null
         }
@@ -386,6 +386,13 @@ export type Database = {
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_details_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
