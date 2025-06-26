@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -25,7 +26,7 @@ interface Booking {
   id: string;
   user_id: string;
   property_id: string;
-  college_name?: string;
+  college_name_pkey?: string;
   course?: string;
   degree?: string;
   branch?: string;
@@ -82,17 +83,21 @@ export default function BookingSlot({ propertyId }: BookingSlotProps) {
     queryFn: async () => {
       if (!user || !propertyId) return null;
       
+      console.log('Fetching booking for user:', user.id, 'property:', propertyId);
+      
       const { data, error } = await supabase
         .from('student_details')
         .select('*')
         .eq('user_id', user.id)
         .eq('property_id', propertyId)
-        .single();
+        .maybeSingle();
         
-      if (error && error.code !== 'PGSQL_NO_ROWS_RETURNED') {
+      if (error) {
+        console.error('Error fetching booking:', error);
         throw error;
       }
       
+      console.log('Existing booking data:', data);
       return data as Booking | null;
     },
     enabled: !!user && !!propertyId,
@@ -101,6 +106,7 @@ export default function BookingSlot({ propertyId }: BookingSlotProps) {
   // Initialize form with existing booking data if available
   React.useEffect(() => {
     if (existingBooking) {
+      console.log('Initializing form with existing booking:', existingBooking);
       if (existingBooking.move_in_date) {
         setMoveInDate(new Date(existingBooking.move_in_date));
       }
@@ -113,8 +119,8 @@ export default function BookingSlot({ propertyId }: BookingSlotProps) {
       if (existingBooking.preferences?.special_requests) {
         setSpecialRequests(existingBooking.preferences.special_requests);
       }
-      if (existingBooking.college_name) {
-        setCollegeName(existingBooking.college_name);
+      if (existingBooking.college_name_pkey) {
+        setCollegeName(existingBooking.college_name_pkey);
       }
       if (existingBooking.degree) {
         setDegree(existingBooking.degree);
@@ -146,48 +152,83 @@ export default function BookingSlot({ propertyId }: BookingSlotProps) {
   // Create booking mutation
   const createBookingMutation = useMutation({
     mutationFn: async () => {
-      if (!user || !propertyId || !moveInDate) throw new Error('Missing required fields');
-      if (!collegeName || !degree || !branch) throw new Error('College, degree, and branch information are required');
+      if (!user || !propertyId || !moveInDate) {
+        throw new Error('Missing required fields');
+      }
+      if (!collegeName || !degree || !branch) {
+        throw new Error('College, degree, and branch information are required');
+      }
       
-      setLoading(true);
+      console.log('Creating booking with data:', {
+        user_id: user.id,
+        property_id: propertyId,
+        move_in_date: moveInDate.toISOString(),
+        move_out_date: moveOutDate?.toISOString() || null,
+        college_name_pkey: collegeName,
+        degree: degree,
+        branch: branch,
+        course: course || null,
+        year_of_study: yearOfStudy || null,
+        daily_routine: {
+          wake_up_time: wakeUpTime,
+          sleep_time: sleepTime,
+          work_schedule: workSchedule || null,
+          extracurricular_activities: extracurricularActivities || null
+        },
+        preferences: {
+          room_type: roomType,
+          special_requests: specialRequests || null
+        },
+        has_booked_pg: true
+      });
       
       const bookingData = {
         user_id: user.id,
         property_id: propertyId,
         move_in_date: moveInDate.toISOString(),
-        move_out_date: moveOutDate?.toISOString(),
-        college_name: collegeName,
+        move_out_date: moveOutDate?.toISOString() || null,
+        college_name_pkey: collegeName,
         degree: degree,
         branch: branch,
-        course: course,
-        year_of_study: yearOfStudy,
+        course: course || null,
+        year_of_study: yearOfStudy || null,
         daily_routine: {
           wake_up_time: wakeUpTime,
           sleep_time: sleepTime,
-          work_schedule: workSchedule,
-          extracurricular_activities: extracurricularActivities
+          work_schedule: workSchedule || null,
+          extracurricular_activities: extracurricularActivities || null
         },
         preferences: {
           room_type: roomType,
-          special_requests: specialRequests
-        }
+          special_requests: specialRequests || null
+        },
+        has_booked_pg: true
       };
       
       const { data, error } = await supabase
         .from('student_details')
-        .upsert(bookingData)
+        .upsert(bookingData, {
+          onConflict: 'user_id,property_id'
+        })
         .select()
         .single();
         
-      if (error) throw error;
+      if (error) {
+        console.error('Booking error:', error);
+        throw error;
+      }
+      
+      console.log('Booking created successfully:', data);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['booking', user?.id, propertyId] });
+      queryClient.invalidateQueries({ queryKey: ['studentDetails', user?.id] });
       toast.success('Booking request submitted successfully!');
       setIsEditing(false);
     },
     onError: (error: any) => {
+      console.error('Booking mutation error:', error);
       toast.error(error.message || 'Failed to submit booking request');
     },
     onSettled: () => {
@@ -196,6 +237,8 @@ export default function BookingSlot({ propertyId }: BookingSlotProps) {
   });
 
   const handleSubmitBooking = async () => {
+    console.log('Submit booking clicked');
+    
     if (!moveInDate) {
       toast.error('Please select a move-in date');
       return;
@@ -216,6 +259,7 @@ export default function BookingSlot({ propertyId }: BookingSlotProps) {
       return;
     }
     
+    setLoading(true);
     createBookingMutation.mutate();
   };
 
@@ -305,7 +349,7 @@ export default function BookingSlot({ propertyId }: BookingSlotProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <p className="text-sm font-medium">College Name</p>
-                  <p>{existingBooking.college_name || 'Not specified'}</p>
+                  <p>{existingBooking.college_name_pkey || 'Not specified'}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm font-medium">Degree</p>
